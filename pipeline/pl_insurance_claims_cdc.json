@@ -1,0 +1,63 @@
+{
+	"name": "pl_insurance_claims_cdc",
+	"properties": {
+		"activities": [
+			{
+				"name": "lkp_old_watermark",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "PostgreSqlV2Source",
+						"query": "SELECT watermark_value from insurance_oltp.watermark_table LIMIT 1;",
+						"queryTimeout": "02:00:00"
+					},
+					"dataset": {
+						"referenceName": "watermark_tbl",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "lkp_new_watermark",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "lkp_old_watermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "PostgreSqlV2Source",
+						"query": "select max(updated_at) as new_watermark from insurance_oltp.claims;",
+						"queryTimeout": "02:00:00"
+					},
+					"dataset": {
+						"referenceName": "watermark_tbl",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}

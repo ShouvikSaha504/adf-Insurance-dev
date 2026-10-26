@@ -1,0 +1,32 @@
+{
+	"name": "dest_parq_dataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_az_dl_target_storage",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"tableName": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "insurance_datasets"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().tableName",
+					"type": "Expression"
+				},
+				"folderPath": "bronze_test_v2",
+				"fileSystem": "destazinsurancedev"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
