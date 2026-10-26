@@ -112,6 +112,43 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/dest_parq_dataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_az_dl_target_storage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"tableName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "insurance_datasets"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().tableName",
+							"type": "Expression"
+						},
+						"folderPath": "bronze_test_v2",
+						"fileSystem": "destazinsurancedev"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_az_dl_target_storage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/onprem_src_pgsql')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -141,6 +178,100 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/pg_sql_src_ingest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/watermark_tbl')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "pg_sql_src_ingest",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "insurance_datasets"
+				},
+				"annotations": [],
+				"type": "PostgreSqlV2Table",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/pg_sql_src_ingest')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_insurance_claims_cdc')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "lkp_old_watermark",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "PostgreSqlV2Source",
+								"query": "SELECT watermark_value from insurance_oltp.watermark_table LIMIT 1;",
+								"queryTimeout": "02:00:00"
+							},
+							"dataset": {
+								"referenceName": "watermark_tbl",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "lkp_new_watermark",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "lkp_old_watermark",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "PostgreSqlV2Source",
+								"query": "select max(updated_at) as new_watermark from insurance_oltp.claims;",
+								"queryTimeout": "02:00:00"
+							},
+							"dataset": {
+								"referenceName": "watermark_tbl",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/watermark_tbl')]"
 			]
 		}
 	]
