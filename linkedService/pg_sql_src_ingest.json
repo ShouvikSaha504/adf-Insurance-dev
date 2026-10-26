@@ -1,0 +1,27 @@
+{
+	"name": "pg_sql_src_ingest",
+	"properties": {
+		"annotations": [],
+		"type": "PostgreSqlV2",
+		"typeProperties": {
+			"server": "localhost",
+			"port": "5433",
+			"database": "postgres",
+			"username": "postgres",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_az_storage_kv",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "postgres-pwd-locale"
+			},
+			"sslMode": 2,
+			"authenticationType": "Basic"
+		},
+		"connectVia": {
+			"referenceName": "shir-pgsql-local",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
