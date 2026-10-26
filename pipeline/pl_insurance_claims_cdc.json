@@ -56,6 +56,157 @@
 						"type": "DatasetReference"
 					}
 				}
+			},
+			{
+				"name": "if_cdc",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "lkp_new_watermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(ticks(activity('lkp_new_watermark').output.firstRow.new_watermark), ticks(activity('lkp_old_watermark').output.firstRow.watermark_value))",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "lkp_log_nochanges",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "PostgreSqlV2Source",
+									"query": {
+										"value": "INSERT INTO insurance_oltp.pipeline_run_log (pipeline_name, run_id, table_name, old_watermark, new_watermark, rows_copied, status) VALUES ('@{pipeline().Pipeline}', '@{pipeline().RunId}', 'claims', '@{activity('lkp_old_watermark').output.firstRow.watermark_value}', '@{activity('lkp_new_watermark').output.firstRow.new_watermark}', 0, 'NO_CHANGES');",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00"
+								},
+								"dataset": {
+									"referenceName": "watermark_tbl",
+									"type": "DatasetReference"
+								}
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "cp_claims_cdc",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "PostgreSqlV2Source",
+									"query": {
+										"value": "select * from insurance_oltp.claims\n\nwhere updated_at > '@{activity('lkp_old_watermark').output.firstRow.watermark_value}'\n\nand updated_at <= '@{activity('lkp_new_watermark').output.firstRow.new_watermark}';\n",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00"
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "onprem_src_pgsql",
+									"type": "DatasetReference",
+									"parameters": {
+										"table_name": "claims"
+									}
+								}
+							]
+						},
+						{
+							"name": "lkp_update_watermark",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "cp_claims_cdc",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "PostgreSqlV2Source",
+									"query": {
+										"value": "UPDATE insurance_oltp.watermark_table \nSET watermark_value = '@{activity('lkp_new_watermark').output.firstRow.new_watermark}' \nWHERE table_name LIKE '%claims%';",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00"
+								},
+								"dataset": {
+									"referenceName": "watermark_tbl",
+									"type": "DatasetReference"
+								}
+							}
+						},
+						{
+							"name": "lkp_log_run",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "lkp_update_watermark",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "PostgreSqlV2Source",
+									"query": {
+										"value": "INSERT INTO insurance_oltp.pipeline_run_log (pipeline_name, run_id, table_name, old_watermark, new_watermark, rows_copied, status) VALUES ('@{pipeline().Pipeline}', '@{pipeline().RunId}', 'claims', '@{activity('lkp_old_watermark').output.firstRow.watermark_value}', '@{activity('lkp_new_watermark').output.firstRow.new_watermark}', @{activity('cp_claims_cdc').output.rowsCopied}, 'SUCCESS');",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00"
+								},
+								"dataset": {
+									"referenceName": "watermark_tbl",
+									"type": "DatasetReference"
+								}
+							}
+						}
+					]
+				}
 			}
 		],
 		"annotations": []
