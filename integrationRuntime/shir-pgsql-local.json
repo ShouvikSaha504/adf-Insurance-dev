@@ -1,0 +1,6 @@
+{
+	"name": "shir-pgsql-local",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
