@@ -125,7 +125,25 @@
 									},
 									"queryTimeout": "02:00:00"
 								},
-								"enableStaging": false
+								"sink": {
+									"type": "ParquetSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"copyBehavior": "PreserveHierarchy"
+									},
+									"formatSettings": {
+										"type": "ParquetWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
 							},
 							"inputs": [
 								{
@@ -133,6 +151,18 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"table_name": "claims"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "dest_parq_dataset",
+									"type": "DatasetReference",
+									"parameters": {
+										"tableName": {
+											"value": "@concat('claims_incremental/load_',formatDateTime(utcNow(),'yyyyMMddHHmmss'))",
+											"type": "Expression"
+										}
 									}
 								}
 							]
