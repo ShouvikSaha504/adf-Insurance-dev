@@ -10,6 +10,22 @@
 		"ls_az_storage_kv_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://az-insurance-kv.vault.azure.net/"
+		},
+		"ls_az_dl_target_storage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://ssinsurancedev.dfs.core.windows.net/"
+		},
+		"pg_sql_src_ingest_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "localhost"
+		},
+		"pg_sql_src_ingest_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "postgres"
+		},
+		"pg_sql_src_ingest_properties_typeProperties_username": {
+			"type": "string",
+			"defaultValue": "postgres"
 		}
 	},
 	"variables": {
@@ -28,6 +44,104 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/shir-pgsql-local')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_az_dl_target_storage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_az_dl_target_storage_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ls_az_storage_kv",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "az-storage-target-secrets-key"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_az_storage_kv')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pg_sql_src_ingest')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "PostgreSqlV2",
+				"typeProperties": {
+					"server": "[parameters('pg_sql_src_ingest_properties_typeProperties_server')]",
+					"port": "5433",
+					"database": "[parameters('pg_sql_src_ingest_properties_typeProperties_database')]",
+					"username": "[parameters('pg_sql_src_ingest_properties_typeProperties_username')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "ls_az_storage_kv",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "postgres-pwd-locale"
+					},
+					"sslMode": 2,
+					"authenticationType": "Basic"
+				},
+				"connectVia": {
+					"referenceName": "shir-pgsql-local",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/shir-pgsql-local')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_az_storage_kv')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/onprem_src_pgsql')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "pg_sql_src_ingest",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"table_name": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "insurance_datasets"
+				},
+				"annotations": [],
+				"type": "PostgreSqlV2Table",
+				"schema": [],
+				"typeProperties": {
+					"schema": "insurance_oltp",
+					"table": {
+						"value": "@dataset().table_name",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/pg_sql_src_ingest')]"
+			]
 		}
 	]
 }

@@ -5,8 +5,20 @@
 		"factoryName": {
 			"value": "adf-insurancess-dev"
 		},
+		"ls_az_dl_target_storage_properties_typeProperties_url": {
+			"value": "https://ssinsurancedev.dfs.core.windows.net/"
+		},
 		"ls_az_storage_kv_properties_typeProperties_baseUrl": {
 			"value": "https://az-insurance-kv.vault.azure.net/"
+		},
+		"pg_sql_src_ingest_properties_typeProperties_server": {
+			"value": "localhost"
+		},
+		"pg_sql_src_ingest_properties_typeProperties_database": {
+			"value": "postgres"
+		},
+		"pg_sql_src_ingest_properties_typeProperties_username": {
+			"value": "postgres"
 		}
 	}
 }
