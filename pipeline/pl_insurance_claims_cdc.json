@@ -91,7 +91,7 @@
 								"source": {
 									"type": "PostgreSqlV2Source",
 									"query": {
-										"value": "INSERT INTO insurance_oltp.pipeline_run_log (pipeline_name, run_id, table_name, old_watermark, new_watermark, rows_copied, status) VALUES ('@{pipeline().Pipeline}', '@{pipeline().RunId}', 'claims', '@{activity('lkp_old_watermark').output.firstRow.watermark_value}', '@{activity('lkp_new_watermark').output.firstRow.new_watermark}', 0, 'NO_CHANGES');",
+										"value": "INSERT INTO insurance_oltp.pipeline_run_log (pipeline_name, run_id, table_name, old_watermark, new_watermark, rows_copied, status) VALUES ('@{pipeline().Pipeline}', '@{pipeline().RunId}', 'claims', '@{activity('lkp_old_watermark').output.firstRow.watermark_value}', '@{activity('lkp_new_watermark').output.firstRow.new_watermark}', 0, 'NO_CHANGES')\n RETURNING log_id;",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00"
@@ -190,7 +190,7 @@
 								"source": {
 									"type": "PostgreSqlV2Source",
 									"query": {
-										"value": "UPDATE insurance_oltp.watermark_table \nSET watermark_value = '@{activity('lkp_new_watermark').output.firstRow.new_watermark}' \nWHERE table_name LIKE '%claims%';",
+										"value": "UPDATE insurance_oltp.watermark_table \nSET watermark_value = '@{activity('lkp_new_watermark').output.firstRow.new_watermark}' \nWHERE table_name LIKE '%claims%'\nRETURNING watermark_value;",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00"
@@ -224,7 +224,7 @@
 								"source": {
 									"type": "PostgreSqlV2Source",
 									"query": {
-										"value": "INSERT INTO insurance_oltp.pipeline_run_log (pipeline_name, run_id, table_name, old_watermark, new_watermark, rows_copied, status) VALUES ('@{pipeline().Pipeline}', '@{pipeline().RunId}', 'claims', '@{activity('lkp_old_watermark').output.firstRow.watermark_value}', '@{activity('lkp_new_watermark').output.firstRow.new_watermark}', @{activity('cp_claims_cdc').output.rowsCopied}, 'SUCCESS');",
+										"value": "INSERT INTO insurance_oltp.pipeline_run_log (pipeline_name, run_id, table_name, old_watermark, new_watermark, rows_copied, status) VALUES ('@{pipeline().Pipeline}', '@{pipeline().RunId}', 'claims', '@{activity('lkp_old_watermark').output.firstRow.watermark_value}', '@{activity('lkp_new_watermark').output.firstRow.new_watermark}', @{activity('cp_claims_cdc').output.rowsCopied}, 'SUCCESS')\nRETURNING log_id;",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00"
