@@ -1,0 +1,27 @@
+{
+	"name": "onprem_src_pgsql",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "pg_sql_src_ingest",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"table_name": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "insurance_datasets"
+		},
+		"annotations": [],
+		"type": "PostgreSqlV2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": "insurance_oltp",
+			"table": {
+				"value": "@dataset().table_name",
+				"type": "Expression"
+			}
+		}
+	}
+}
