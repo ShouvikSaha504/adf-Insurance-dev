@@ -1,0 +1,24 @@
+{
+	"name": "LS_AZ_SQL_FIN",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "sql-insurance-dev.database.windows.net",
+			"database": "insurance_finanace",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "sqladmin",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_az_storage_kv",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "sql-finance-password"
+			},
+			"connectTimeout": 120
+		}
+	}
+}
