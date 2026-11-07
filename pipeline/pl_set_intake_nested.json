@@ -393,14 +393,7 @@
 										}
 									}
 								},
-								"logStorageSettings": {
-									"linkedServiceName": {
-										"referenceName": "ls_az_dl_target_storage",
-										"type": "LinkedServiceReference"
-									},
-									"path": "settlementstest/copylogs"
-								},
-								"enableLogging": true,
+								"enableLogging": false,
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
 									"recursive": true,

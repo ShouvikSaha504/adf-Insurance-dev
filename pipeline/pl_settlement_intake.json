@@ -398,7 +398,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT file_name, rows_loaded, status from fin.file_audit\nWHERE \nfile_name \nLIKE '%@{formatDateTime(pipeline().parameters.runDate,'yyyyMMdd')}%'",
+						"sqlReaderQuery": {
+							"value": "SELECT file_name, rows_loaded, status from fin.file_audit\nWHERE \nfile_name \nLIKE '%@{formatDateTime(pipeline().parameters.runDate,'yyyyMMdd')}%'",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -528,14 +531,7 @@
 							"folderPath": "@concat('landing/', formatDateTime(pipeline().parameters.runDate,'yyyy/MM/dd'))"
 						}
 					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "ls_az_dl_target_storage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "settlementstest/copylogs"
-					},
-					"enableLogging": true,
+					"enableLogging": false,
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
 						"recursive": true,
