@@ -1,0 +1,392 @@
+{
+	"name": "pl_set_intake_nested",
+	"properties": {
+		"activities": [
+			{
+				"name": "sw_partner_files",
+				"type": "Switch",
+				"dependsOn": [
+					{
+						"activity": "sv_extract_fileName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "@toUpper(variables('filePrefix'))\n\n\n\n\n\n",
+						"type": "Expression"
+					},
+					"cases": [
+						{
+							"value": "ABC",
+							"activities": [
+								{
+									"name": "CP_BANK",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"additionalColumns": [
+												{
+													"name": "source_file",
+													"value": {
+														"value": "@pipeline().parameters.fileName",
+														"type": "Expression"
+													}
+												}
+											],
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"preCopyScript": "DELETE FROM stg.bank_settlement WHERE \nsource_file = '@{pipeline().parameters.fileName}'",
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false,
+											"disableMetricsCollection": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_ADLS_CSV",
+											"type": "DatasetReference",
+											"parameters": {
+												"folderPath": "@pipeline().parameters.folderPath",
+												"fileName": "@pipeline().parameters.fileName"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_AZ_SQL_TBL",
+											"type": "DatasetReference",
+											"parameters": {
+												"schemaName": "stg",
+												"tableName": "bank_settlement"
+											}
+										}
+									]
+								}
+							]
+						},
+						{
+							"value": "TPA",
+							"activities": [
+								{
+									"name": "CP_TPA",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"additionalColumns": [
+												{
+													"name": "source_file",
+													"value": {
+														"value": "@pipeline().parameters.fileName",
+														"type": "Expression"
+													}
+												}
+											],
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"preCopyScript": {
+												"value": "DELETE FROM stg.tpa_settlement WHERE \nsource_file = '@{pipeline().parameters.fileName}'",
+												"type": "Expression"
+											},
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false,
+											"disableMetricsCollection": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_ADLS_CSV",
+											"type": "DatasetReference",
+											"parameters": {
+												"folderPath": "@pipeline().parameters.folderPath",
+												"fileName": "@pipeline().parameters.fileName"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_AZ_SQL_TBL",
+											"type": "DatasetReference",
+											"parameters": {
+												"schemaName": "stg",
+												"tableName": "tpa_settlement"
+											}
+										}
+									]
+								}
+							]
+						},
+						{
+							"value": "REPAIR",
+							"activities": [
+								{
+									"name": "CP_REPAIR",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"additionalColumns": [
+												{
+													"name": "source_file",
+													"value": {
+														"value": "@pipeline().parameters.fileName",
+														"type": "Expression"
+													}
+												}
+											],
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"preCopyScript": {
+												"value": "DELETE FROM stg.repair_invoice WHERE \nsource_file = '@{pipeline().parameters.fileName}'",
+												"type": "Expression"
+											},
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false,
+											"disableMetricsCollection": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_ADLS_CSV",
+											"type": "DatasetReference",
+											"parameters": {
+												"folderPath": "@pipeline().parameters.folderPath",
+												"fileName": "@pipeline().parameters.fileName"
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_AZ_SQL_TBL",
+											"type": "DatasetReference",
+											"parameters": {
+												"schemaName": "stg",
+												"tableName": "repair_invoice"
+											}
+										}
+									]
+								}
+							]
+						}
+					],
+					"defaultActivities": [
+						{
+							"name": "CP_QUARANTINE",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DS_ADLS_FILE_BIN",
+									"type": "DatasetReference",
+									"parameters": {
+										"folderPath": "@pipeline().parameters.folderPath",
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DS_ADLS_FILE_BIN",
+									"type": "DatasetReference",
+									"parameters": {
+										"folderPath": "@replace(pipeline().parameters.folderPath, 'landing/', 'quarantine/')",
+										"fileName": "@pipeline().parameters.fileName"
+									}
+								}
+							]
+						},
+						{
+							"name": "dl_landing",
+							"type": "Delete",
+							"dependsOn": [
+								{
+									"activity": "CP_QUARANTINE",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "DS_ADLS_FILE_BIN",
+									"type": "DatasetReference",
+									"parameters": {
+										"folderPath": {
+											"value": "@pipeline().parameters.folderPath",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@pipeline().parameters.fileName",
+											"type": "Expression"
+										}
+									}
+								},
+								"enableLogging": false,
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "sv_extract_fileName",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "filePrefix",
+					"value": {
+						"value": "@split(pipeline().parameters.fileName, '_')[0]\n",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"folderPath": {
+				"type": "string"
+			},
+			"fileName": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"filePrefix": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
