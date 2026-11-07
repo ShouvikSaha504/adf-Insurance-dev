@@ -1,59 +1,6 @@
 {
 	"name": "pl_settle_intake_exec_files",
 	"properties": {
-		"activities": [
-			{
-				"name": "switch_partner",
-				"type": "Switch",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"cases": [],
-					"defaultActivities": [
-						{
-							"name": "CP_Bank",
-							"type": "Copy",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 45,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "DelimitedTextSource",
-									"storeSettings": {
-										"type": "AzureBlobFSReadSettings",
-										"recursive": true,
-										"enablePartitionDiscovery": false
-									},
-									"formatSettings": {
-										"type": "DelimitedTextReadSettings"
-									}
-								},
-								"enableStaging": false
-							},
-							"inputs": [
-								{
-									"referenceName": "DS_ADLS_CSV",
-									"type": "DatasetReference",
-									"parameters": {
-										"folderPath": "@pipeline().parameters.folderPath",
-										"fileName": {
-											"value": "@pipeline().parameters.fileName",
-											"type": "Expression"
-										}
-									}
-								}
-							]
-						}
-					]
-				}
-			}
-		],
 		"annotations": []
 	}
 }
