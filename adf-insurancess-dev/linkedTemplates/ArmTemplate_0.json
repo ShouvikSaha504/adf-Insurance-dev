@@ -778,6 +778,20 @@
 												},
 												"enableStaging": false,
 												"enableSkipIncompatibleRow": true,
+												"logSettings": {
+													"enableCopyActivityLog": true,
+													"copyActivityLogSettings": {
+														"logLevel": "Warning",
+														"enableReliableLogging": true
+													},
+													"logLocationSettings": {
+														"linkedServiceName": {
+															"referenceName": "ls_az_dl_target_storage",
+															"type": "LinkedServiceReference"
+														},
+														"path": "settlementstest/copylogs"
+													}
+												},
 												"translator": {
 													"type": "TabularTranslator",
 													"typeConversion": true,
@@ -857,7 +871,21 @@
 													"disableMetricsCollection": false
 												},
 												"enableStaging": false,
-												"enableSkipIncompatibleRow": false,
+												"enableSkipIncompatibleRow": true,
+												"logSettings": {
+													"enableCopyActivityLog": true,
+													"copyActivityLogSettings": {
+														"logLevel": "Warning",
+														"enableReliableLogging": true
+													},
+													"logLocationSettings": {
+														"linkedServiceName": {
+															"referenceName": "ls_az_dl_target_storage",
+															"type": "LinkedServiceReference"
+														},
+														"path": "settlementstest/copylogs"
+													}
+												},
 												"translator": {
 													"type": "TabularTranslator",
 													"typeConversion": true,
@@ -937,6 +965,21 @@
 													"disableMetricsCollection": false
 												},
 												"enableStaging": false,
+												"enableSkipIncompatibleRow": true,
+												"logSettings": {
+													"enableCopyActivityLog": true,
+													"copyActivityLogSettings": {
+														"logLevel": "Warning",
+														"enableReliableLogging": true
+													},
+													"logLocationSettings": {
+														"linkedServiceName": {
+															"referenceName": "ls_az_dl_target_storage",
+															"type": "LinkedServiceReference"
+														},
+														"path": "settlementstest/copylogs"
+													}
+												},
 												"translator": {
 													"type": "TabularTranslator",
 													"typeConversion": true,
@@ -1656,14 +1699,7 @@
 									"folderPath": "@concat('landing/', formatDateTime(pipeline().parameters.runDate,'yyyy/MM/dd'))"
 								}
 							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "ls_az_dl_target_storage",
-									"type": "LinkedServiceReference"
-								},
-								"path": "settlementstest/copylogs"
-							},
-							"enableLogging": true,
+							"enableLogging": false,
 							"storeSettings": {
 								"type": "AzureBlobFSReadSettings",
 								"recursive": true,
