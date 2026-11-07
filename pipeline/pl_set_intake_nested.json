@@ -21,7 +21,7 @@
 					},
 					"cases": [
 						{
-							"value": "ABC",
+							"value": "BANK",
 							"activities": [
 								{
 									"name": "CP_BANK",
@@ -58,7 +58,10 @@
 										},
 										"sink": {
 											"type": "AzureSqlSink",
-											"preCopyScript": "DELETE FROM stg.bank_settlement WHERE \nsource_file = '@{pipeline().parameters.fileName}'",
+											"preCopyScript": {
+												"value": "DELETE FROM stg.bank_settlement WHERE \nsource_file = '@{pipeline().parameters.fileName}'",
+												"type": "Expression"
+											},
 											"writeBehavior": "insert",
 											"sqlWriterUseTableLock": false,
 											"disableMetricsCollection": false

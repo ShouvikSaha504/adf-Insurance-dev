@@ -253,6 +253,89 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "sv_run_summary",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "FE_FILES",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "runsummary",
+					"value": {
+						"value": "@concat('File processed on ', pipeline().parameters.runDate, ': ', join(variables('processedfiles'), ', '))\n",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "cp_claim_ref",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "sv_run_summary",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "PostgreSqlV2Source",
+						"query": "SELECT claimid AS claim_id,claimedamount AS claim_amount,status AS claim_status,claim_type\nFROM insurance_oltp.claims;",
+						"queryTimeout": "02:00:00"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "TRUNCATE TABLE fin.claims_ref;",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "onprem_src_pgsql",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_AZ_SQL_TBL",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "fin",
+							"tableName": "claims_ref"
+						}
+					}
+				]
 			}
 		],
 		"parameters": {
