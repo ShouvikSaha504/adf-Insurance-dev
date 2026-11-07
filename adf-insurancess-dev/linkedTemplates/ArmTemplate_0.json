@@ -705,6 +705,151 @@
 				"[concat(variables('factoryId'), '/datasets/onprem_src_pgsql')]",
 				"[concat(variables('factoryId'), '/datasets/dest_parq_dataset')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_settlement_intake')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "until_wait_manifest",
+						"type": "Until",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@variables('manifestfound')",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "GM_CHK_MANIFEST",
+									"type": "GetMetadata",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "DS_ADLS_FILE_BIN",
+											"type": "DatasetReference",
+											"parameters": {
+												"folderPath": {
+													"value": "@concat('landing/',formatDateTime(pipeline().parameters.runDate,'yyyy/MM/dd'))",
+													"type": "Expression"
+												},
+												"fileName": {
+													"value": "@concat('_MANIFEST_',formatDateTime(pipeline().parameters.runDate,'yyyyMMdd'),'.ctl')",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"exists"
+										],
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "BinaryReadSettings"
+										}
+									}
+								},
+								{
+									"name": "SV_MANIFEST_FOUND",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "GM_CHK_MANIFEST",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "manifestfound",
+										"value": {
+											"value": "@activity('GM_CHK_MANIFEST').output.exists",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "wait30sec",
+									"type": "Wait",
+									"dependsOn": [
+										{
+											"activity": "SV_MANIFEST_FOUND",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": {
+											"value": "@if(variables('manifestfound'),1,30)",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"timeout": "0.12:00:00"
+						}
+					},
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"runDate": {
+						"type": "string",
+						"defaultValue": "2026-10-11"
+					}
+				},
+				"variables": {
+					"manifestfound": {
+						"type": "Boolean"
+					},
+					"processedfiles": {
+						"type": "Array"
+					},
+					"runsummary": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_FILE_BIN')]"
+			]
 		}
 	]
 }
