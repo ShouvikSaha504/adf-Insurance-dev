@@ -1,0 +1,33 @@
+{
+	"name": "DS_AZ_SQL_TBL",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_AZ_SQL_FIN",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"schemaName": {
+				"type": "string"
+			},
+			"tableName": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "partner_settlement_dataset"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().schemaName",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().tableName",
+				"type": "Expression"
+			}
+		}
+	}
+}
