@@ -45,6 +45,7 @@
 								],
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
 									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {
@@ -97,6 +98,91 @@
 						}
 					],
 					"timeout": "0.12:00:00"
+				}
+			},
+			{
+				"name": "GM_LISTFILES",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "until_wait_manifest",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_ADLS_FOLDER",
+						"type": "DatasetReference",
+						"parameters": {
+							"folderPath": {
+								"value": "@concat('landing/',formatDateTime(pipeline().parameters.runDate,'yyyy/MM/dd'))",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "BinaryReadSettings"
+					}
+				}
+			},
+			{
+				"name": "fail_no_partnerfiles",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "until_wait_manifest",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": {
+						"value": "@concat('partner files not recieved for', pipeline().parameters.runDate)",
+						"type": "Expression"
+					},
+					"errorCode": "NO_MANIFEST"
+				}
+			},
+			{
+				"name": "filter_csvfiles",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "GM_LISTFILES",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GM_LISTFILES').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@endswith(item().name,'.csv' )",
+						"type": "Expression"
+					}
 				}
 			}
 		],
