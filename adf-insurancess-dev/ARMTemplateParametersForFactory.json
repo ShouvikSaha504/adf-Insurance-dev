@@ -5,6 +5,15 @@
 		"factoryName": {
 			"value": "adf-insurancess-dev"
 		},
+		"LS_AZ_SQL_FIN_properties_typeProperties_server": {
+			"value": "sql-insurance-dev.database.windows.net"
+		},
+		"LS_AZ_SQL_FIN_properties_typeProperties_database": {
+			"value": "insurance_finanace"
+		},
+		"LS_AZ_SQL_FIN_properties_typeProperties_userName": {
+			"value": "sqladmin"
+		},
 		"ls_az_dl_target_storage_properties_typeProperties_url": {
 			"value": "https://ssinsurancedev.dfs.core.windows.net/"
 		},
