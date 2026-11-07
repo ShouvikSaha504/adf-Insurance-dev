@@ -135,6 +135,7 @@
 					],
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
 						"enablePartitionDiscovery": false
 					},
 					"formatSettings": {
@@ -183,6 +184,26 @@
 						"value": "@endswith(item().name,'.csv' )",
 						"type": "Expression"
 					}
+				}
+			},
+			{
+				"name": "FE_FILES",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "filter_csvfiles",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('filter_csvfiles').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true
 				}
 			}
 		],
