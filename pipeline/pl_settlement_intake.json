@@ -185,6 +185,74 @@
 						"type": "Expression"
 					}
 				}
+			},
+			{
+				"name": "FE_FILES",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "filter_csvfiles",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('filter_csvfiles').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "EXEC_ProcessFile",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_set_intake_nested",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"folderPath": {
+										"value": "@concat('landing/',formatDateTime(pipeline().parameters.runDate,'yyyy/MM/dd'))",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "@item().name\r\n",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "AV_PROCESSED_FILES",
+							"type": "AppendVariable",
+							"dependsOn": [
+								{
+									"activity": "EXEC_ProcessFile",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "processedfiles",
+								"value": {
+									"value": "@item().name",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
 			}
 		],
 		"parameters": {
