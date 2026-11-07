@@ -339,6 +339,209 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "SP_Reconcilliation",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "cp_claim_ref",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[fin].[usp_reconcile_settlements]",
+					"storedProcedureParameters": {
+						"file_list": {
+							"value": {
+								"value": "@join(variables('processedfiles'),', ' )",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AZ_SQL_FIN",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "CP_PROCESSED_FILES",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "SP_Reconcilliation",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT file_name, rows_loaded, status from fin.file_audit\nWHERE \nfile_name \nLIKE '%@{formatDateTime(pipeline().parameters.runDate,'yyyyMMdd')}%'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_AZ_SQL_TBL",
+						"type": "DatasetReference",
+						"parameters": {
+							"schemaName": "fin",
+							"tableName": "file_audit"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_CONTROL_FILE",
+						"type": "DatasetReference",
+						"parameters": {
+							"folderPath": "@concat('outbound/', formatDateTime(pipeline().parameters.runDate,'yyyy/MM/dd'))",
+							"fileName": "@concat('_PROCESSED_', formatDateTime(pipeline().parameters.runDate,'yyyyMMdd'),'.ctl')"
+						}
+					}
+				]
+			},
+			{
+				"name": "CP_ARCHIVE",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "CP_PROCESSED_FILES",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_ADLS_FOLDER",
+						"type": "DatasetReference",
+						"parameters": {
+							"folderPath": "@concat('landing/', formatDateTime(pipeline().parameters.runDate,'yyyy/MM/dd'))"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_FOLDER",
+						"type": "DatasetReference",
+						"parameters": {
+							"folderPath": "@concat('archive/', formatDateTime(pipeline().parameters.runDate,'yyyy/MM/dd'))"
+						}
+					}
+				]
+			},
+			{
+				"name": "DL_LANDING",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "CP_ARCHIVE",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_ADLS_FOLDER",
+						"type": "DatasetReference",
+						"parameters": {
+							"folderPath": "@concat('landing/', formatDateTime(pipeline().parameters.runDate,'yyyy/MM/dd'))"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "ls_az_dl_target_storage",
+							"type": "LinkedServiceReference"
+						},
+						"path": "settlementstest/copylogs"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					}
+				}
 			}
 		],
 		"parameters": {
