@@ -214,10 +214,6 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"pipeline": {
-									"referenceName": "pl_settle_intake_exec_files",
-									"type": "PipelineReference"
-								},
 								"waitOnCompletion": true
 							}
 						}
