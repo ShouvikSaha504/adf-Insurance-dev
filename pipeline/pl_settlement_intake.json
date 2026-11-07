@@ -185,40 +185,6 @@
 						"type": "Expression"
 					}
 				}
-			},
-			{
-				"name": "FE_FILES",
-				"type": "ForEach",
-				"dependsOn": [
-					{
-						"activity": "filter_csvfiles",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"items": {
-						"value": "@activity('filter_csvfiles').output.value",
-						"type": "Expression"
-					},
-					"isSequential": true,
-					"activities": [
-						{
-							"name": "exec_process_file",
-							"type": "ExecutePipeline",
-							"dependsOn": [],
-							"policy": {
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"waitOnCompletion": true
-							}
-						}
-					]
-				}
 			}
 		],
 		"parameters": {
