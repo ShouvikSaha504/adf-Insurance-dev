@@ -1,0 +1,29 @@
+{
+	"name": "DS_ADLS_FOLDER",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_az_dl_target_storage",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"folderPath": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "partner_settlement_dataset"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "@dataset().folderPath",
+					"type": "Expression"
+				},
+				"fileSystem": "settlementstest"
+			}
+		}
+	}
+}
