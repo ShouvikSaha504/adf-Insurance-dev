@@ -323,7 +323,10 @@
 				"inputs": [
 					{
 						"referenceName": "onprem_src_pgsql",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"table_name": "claims"
+						}
 					}
 				],
 				"outputs": [
