@@ -1,0 +1,38 @@
+{
+	"name": "pl_settlement_intake",
+	"properties": {
+		"activities": [
+			{
+				"name": "until_wait_manifest",
+				"type": "Until",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@variables('manifestfound')",
+						"type": "Expression"
+					},
+					"timeout": "0.12:00:00"
+				}
+			}
+		],
+		"parameters": {
+			"runDate": {
+				"type": "string",
+				"defaultValue": "2026-10-11"
+			}
+		},
+		"variables": {
+			"manifestfound": {
+				"type": "Boolean"
+			},
+			"processedfiles": {
+				"type": "Array"
+			},
+			"runsummary": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
