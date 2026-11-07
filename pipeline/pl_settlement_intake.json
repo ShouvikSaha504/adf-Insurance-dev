@@ -300,7 +300,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "PostgreSqlV2Source",
-						"query": "SELECT claimid AS claim_id,claimedamount AS claim_amount,status AS claim_status,claim_type\nFROM insurance_oltp.claims;",
+						"query": "SELECT claim_id AS claim_id,claim_amount AS claim_amount,claim_status AS claim_status,claim_type\nFROM insurance_oltp.claims;",
 						"queryTimeout": "02:00:00"
 					},
 					"sink": {
