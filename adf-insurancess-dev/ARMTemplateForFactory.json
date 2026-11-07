@@ -700,14 +700,7 @@
 												}
 											}
 										},
-										"logStorageSettings": {
-											"linkedServiceName": {
-												"referenceName": "ls_az_dl_target_storage",
-												"type": "LinkedServiceReference"
-											},
-											"path": "settlementstest/copylogs"
-										},
-										"enableLogging": true,
+										"enableLogging": false,
 										"storeSettings": {
 											"type": "AzureBlobFSReadSettings",
 											"recursive": true,
@@ -1333,7 +1326,6 @@
 				"[concat(variables('factoryId'), '/datasets/DS_AZ_SQL_TBL')]",
 				"[concat(variables('factoryId'), '/linkedServices/LS_AZ_SQL_FIN')]",
 				"[concat(variables('factoryId'), '/datasets/DS_ADLS_CONTROL_FILE')]",
-				"[concat(variables('factoryId'), '/linkedServices/ls_az_dl_target_storage')]",
 				"[concat(variables('factoryId'), '/datasets/DS_ADLS_FILE_BIN')]",
 				"[concat(variables('factoryId'), '/pipelines/pl_set_intake_nested')]"
 			]
