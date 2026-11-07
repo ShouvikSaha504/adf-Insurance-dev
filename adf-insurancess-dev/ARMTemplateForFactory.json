@@ -374,6 +374,7 @@
 													"disableMetricsCollection": false
 												},
 												"enableStaging": false,
+												"enableSkipIncompatibleRow": true,
 												"translator": {
 													"type": "TabularTranslator",
 													"typeConversion": true,
@@ -453,6 +454,7 @@
 													"disableMetricsCollection": false
 												},
 												"enableStaging": false,
+												"enableSkipIncompatibleRow": false,
 												"translator": {
 													"type": "TabularTranslator",
 													"typeConversion": true,
